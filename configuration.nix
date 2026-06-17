@@ -7,7 +7,8 @@
 {
   imports =
     [ # Include the results of the hardware scan.
-      ./hardware-configuration.nix
+      #./hardware-configuration.nix
+      /home/ngwx/hardware-configuration.nix
     ];
 
   # Use the systemd-boot EFI boot loader.
@@ -148,6 +149,17 @@
   programs.bash.interactiveShellInit = "fastfetch";
   virtualisation.libvirtd.enable = true;
   programs.virt-manager.enable = true;
+  nix.gc = {
+    automatic = true; 
+    dates = "03:15";
+    options = "--max-freed 68719476736";
+  };
+  programs.bash = { 
+  shellAliases = {
+    nixos = "sudo nixos-rebuild switch --flake ~/nixos-dotfiles#nixos-btw --impure";
+    };
+  };
+
 
 
 #XEON
@@ -158,7 +170,7 @@
   fileSystems."/mnt/steam" = lib.mkIf (config.networking.hostName == "nixos-pc") {
     device = "/dev/disk/by-uuid/59aa4975-62c0-429a-be63-1affaced852e";
     fsType = "ext4";
-    options = ["defaults"];
+    options = ["defaults" "noatime"];
   };
   fileSystems."/Documents" = lib.mkIf (config.networking.hostName == "nixos-pc")
     { device = "/dev/disk/by-uuid/2b8c45c9-8314-4921-b418-e2312533bc2a";
