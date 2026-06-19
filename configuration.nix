@@ -69,7 +69,7 @@
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.ngwx = {
     isNormalUser = true;
-    extraGroups = [ "wheel" "networkmanager" "libvirtd" ]; # Enable ‘sudo’ for the user.
+    extraGroups = [ "wheel" "networkmanager" "podman" ]; # Enable ‘sudo’ for the user.
     packages = with pkgs; [
       tree
     ];
@@ -80,14 +80,15 @@
   # List packages installed in system profile.
   # You can use https://search.nixos.org/ to find more packages (and options).
   environment.systemPackages = with pkgs; [	
+    podman
+    winboat
+    obsidian 
     gparted
     vscode
     gitkraken
-    qemu
     brightnessctl
     pavucontrol 
     wev
-    dnsmasq
     swaybg
     hyprshot
     rofi
@@ -127,7 +128,6 @@
 
   # Enable the OpenSSH daemon.
   services.openssh.enable = true;
-  networking.firewall.trustedInterfaces = [ "virbr0" ];
   # Open ports in the firewall.
   # networking.firewall.allowedTCPPorts = [ ... ];
   # networking.firewall.allowedUDPPorts = [ ... ];
@@ -147,8 +147,6 @@
     ];
   };
   programs.bash.interactiveShellInit = "fastfetch";
-  virtualisation.libvirtd.enable = true;
-  programs.virt-manager.enable = true;
   nix.gc = {
     automatic = true; 
     dates = "03:15";
@@ -160,7 +158,14 @@
     };
   };
 
-
+  virtualisation = {
+    containers.enable = true;
+    podman = {
+      enable = true;
+      dockerCompat = true;
+      defaultNetwork.settings.dns_enabled = true; # Required for containers under podman-compose to be able to talk to each other.
+    };
+  };
 
 #XEON
   hardware.graphics.enable = lib.mkIf (config.networking.hostName == "nixos-pc") true;
