@@ -18,7 +18,7 @@
   # Use latest kernel.
   boot.kernelPackages = pkgs.linuxPackages_latest;
 
-  networking.hostName = "nixos-lap"; # Define your hostname.
+  networking.hostName = "nixos-pc"; # Define your hostname.
 
   # Configure network connections interactively with nmcli or nmtui.
   networking.networkmanager.enable = true;
@@ -69,7 +69,7 @@
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.ngwx = {
     isNormalUser = true;
-    extraGroups = [ "wheel" "networkmanager" "libvirtd" ]; # Enable ‘sudo’ for the user.
+    extraGroups = [ "wheel" "networkmanager" "podman" ]; # Enable ‘sudo’ for the user.
     packages = with pkgs; [
       tree
     ];
@@ -80,14 +80,34 @@
   # List packages installed in system profile.
   # You can use https://search.nixos.org/ to find more packages (and options).
   environment.systemPackages = with pkgs; [	
+    mysql-workbench
+    # support both 32-bit and 64-bit applications
+    wineWow64Packages.stable
+
+    # support 32-bit only
+    wine
+
+    # support 64-bit only
+    (wine.override { wineBuild = "wine64"; })
+
+    # support 64-bit only
+    wine64
+
+    # wine-staging (version with experimental features)
+    wineWow64Packages.staging
+
+    # winetricks (all versions)
+    winetricks
+
+    # native wayland support (unstable)
+    wineWow64Packages.waylandFull
+    obsidian 
     gparted
     vscode
     gitkraken
-    qemu
     brightnessctl
     pavucontrol 
     wev
-    dnsmasq
     swaybg
     hyprshot
     rofi
@@ -127,7 +147,6 @@
 
   # Enable the OpenSSH daemon.
   services.openssh.enable = true;
-  networking.firewall.trustedInterfaces = [ "virbr0" ];
   # Open ports in the firewall.
   # networking.firewall.allowedTCPPorts = [ ... ];
   # networking.firewall.allowedUDPPorts = [ ... ];
@@ -147,8 +166,6 @@
     ];
   };
   programs.bash.interactiveShellInit = "fastfetch";
-  virtualisation.libvirtd.enable = true;
-  programs.virt-manager.enable = true;
   nix.gc = {
     automatic = true; 
     dates = "03:15";
@@ -159,8 +176,10 @@
     nixos = "sudo nixos-rebuild switch --flake ~/nixos-dotfiles#nixos-btw --impure";
     };
   };
-
-
+  services.mysql = {
+    enable = true;
+    package = pkgs.mariadb;
+  };
 
 #XEON
   hardware.graphics.enable = lib.mkIf (config.networking.hostName == "nixos-pc") true;
